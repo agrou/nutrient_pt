@@ -12,45 +12,33 @@
 
 shinyServer(function(input, output, session) {
         
-        ### App features
-        # Compare food ingredients and prepare recipes
-        # Add & Remove buttons change input_current$ingredients.
-        # input_current$ingredients is a reactive value, which means that 
-        # the dependants of this will be notified if this changes.
-        # nutri_filtered depends on input_current$ingredients.
-        # nutri_sum depends on nutri_filtered.
-        # output$RecipeTable depends on nutri_sum.
-        # There is a cascading effect of several things being updated
-        ### Reference: See Pattern 3
-        # https://shiny.rstudio.com/articles/action-buttons.html
-        # https://www.youtube.com/watch?v=63KnV4XWsR0
-        
-        # Note: nutri_filtered also depends on input$NutrientSub, but we want 
-        # it to update the table only when we press the AddIngredient. Since 
-        # the input$NutrientSub is reactive, we need to remove its reactiveness
-        # by using isolate(). This means that nutri_filtered wants to use the 
-        # NutrientSub value, but does not want to be notified as soon as the 
-        # value changes because this would cause a cascading effect up to the 
-        # table being updated.
-        ### Reference: See Isolate
-        # https://shiny.rstudio.com/articles/isolation.html
         
         ### Food tab ## Nutrient section
         
         output$intervalControls <- renderUI({
                 tagList(
-                        # numericInput("minID", h4("Nutritional value ideal minimum value:"),
-                        #              min = 0, 
-                        #              max = 100000,
-                        #              value = 10),
-                        radioButtons("sliderChoices", label = h4("Nutritional ideal value:"), 
-                                     choices = list("Above" = 1, "Below" = 2), selected = 1),
+                        # radioButtons("sliderChoices", label = h4("Nutritional ideal value:"), 
+                        #              choices = list("Above" = 1, "Below" = 2), selected = 1),
                         sliderInput("rangeID", h4(""),
                                      min = 0, 
                                      max = 200,
                                      value = 50)
                 )
                })
+        
+        # http://shiny.leg.ufpr.br/daniel/065-update-input-demo/
+        
+        slider <- reactiveValues(values = NULL)
+        
+        observeEvent(input$nutChoiceID, {
+                slider$values <- session$userData$saveValue
+                
+                print('update slider')
+                
+                updateSliderInput(session, "rangeID", 
+                                  label = "something", min = slider$values/2, max = slider$values, value = slider$values/2)
+                
+        })
         
         output$NutriTable <- renderDataTable({
                 # nutrient_wide <- nutri_long %>%
@@ -63,7 +51,7 @@ shinyServer(function(input, output, session) {
                         filter(str_detect(Nutrient, str_c(str_match(input$nutChoiceID,
                                                                     "^[\\w-\\w+\\s]+"),
                                                           collapse = "|"))) 
-                max_value <<- range(NutriTable$Value)[2]
+                max_value <- range(NutriTable$Value)[2]
                         #NutriTable %>% summarise(min = min(Value), max = max(Value))
                 print(max_value)
                 
@@ -77,25 +65,7 @@ shinyServer(function(input, output, session) {
                 IntervalTable
                 
         })
-        # slider <- reactiveValues(values = NULL)
-        # 
-        # observeEvent(input$nutChoiceID, {
-        #         print('update slider')
-        #         slider$values <- session$userData$saveRange
-        #         # Control the value, min, max
-        #         # updateSliderInput(session, "intervalID", value = c(10, 100),
-        #         #                    min = values[1], max = values[2])
-        # })
         
-        # http://shiny.leg.ufpr.br/daniel/065-update-input-demo/
-        observeEvent(input$nutChoiceID, {
-                c_num <- session$userData$saveValue
-                
-                print('update slider')
-                
-                updateSliderInput(session, "rangeID", 
-                                  label = "something", min = 0, max = c_num, value = c_num)
-        })
         
         #### Recipes tab
         output$QuantitySelection <- renderUI({
@@ -250,24 +220,5 @@ shinyServer(function(input, output, session) {
                  }
                 
         })
-        
-        # output$EnergyPlot <- renderPlotly({
-        #         if (input$nutrientID == "Energia [kcal] (ENERCC)" && !is.null(input$inputID)){
-        #                 nutri_en <- nutri_long %>%
-        #                         select(Food, Quantity, Nutrient, Unit, Value) %>%
-        #                         filter(Food %in% input$inputID) %>% 
-        #                         filter(Nutrient == "Energia [kcal] (ENERCC)")
-        #                 
-        #                 e <- ggplot(data = nutri_en,
-        #                             aes(x = Food, y = Value, fill = Nutrient)) +
-        #                         geom_bar(stat = "identity", position = "dodge") +
-        #                         coord_flip() #+ 
-        #                 #facet_wrap(~Nutrient, ncol = 1)
-        #                 #ggthemes::theme_fivethirtyeight()
-        #                 CompareFood_Plot <- plotly_build(e)
-        #                 CompareFood_Plot$elementId <- NULL
-        #                 CompareFood_Plot
-        #         }
-        #})
 
 })
