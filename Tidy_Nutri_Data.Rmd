@@ -26,6 +26,14 @@ library(emojifont)
 
 ## Importing Nutri Data
 
+Food composition data is publically available and provided by **Instituto Nacional de Saúde Dr. Ricardo Jorge** (portuguese "National Institute of Health" - INSA): http://portfir.insa.pt/foodcomp/introduction 
+*It should not be used with any commercial intent.*
+
+To download the data you can follow these steps:
+Access to "Composição dos alimentos" tab, then select 'Pesquisa de Alimentos' >> 'Download da TCA'
+
+Save it in the folder `data` under the same working directory of the `nutrient_pt` project and read it as follows:
+
 ```{r importNutriData}
 nutri_orig <- read_xlsx("data/insa_tca.xlsx") 
 #glimpse(nutri_orig)
