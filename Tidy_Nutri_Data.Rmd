@@ -1,17 +1,19 @@
 ---
 title: "Tidy Nutri Data"
 author: "Saghir & Andreia (ilustat)"
-date: "`r format(Sys.time(), "%d %B %Y (%X)")`"
+date: "`r Sys.time()`"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
+<!-- date: "`r format(Sys.time(), "%d %B %Y (%X)")`" -->
 
 ***
 
 **Start: `r format(Sys.time(), "%d %B %Y (%X)")`**
 
 ***
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -110,10 +112,13 @@ nutri_tidy <- nutri_long %>%
          Nutrient = keyVars) %>% 
   left_join(nUnit, by = c("foodID", "grpNtr")) %>% 
   left_join(nQty, by = c("foodID", "grpNtr")) %>% 
-  select(-grpNtr, -grpType) %>% 
-  arrange(foodID, Nutrient )
+  # select(-grpNtr, -grpType) %>% 
+  mutate(NutrientCode = gsub(".*\\((.*)\\).*", "\\1", Nutrient)) %>% 
+  mutate(Value = as.numeric(Value)) %>% 
+  select(foodID, foodGroup, foodItem, Nutrient, NutrientCode, Value, Unit, Quantity) %>% 
+  arrange(foodID, Nutrient)
 
-glimpse(nutri_tidy)
+  glimpse(nutri_tidy)
 ```
 
 
@@ -139,24 +144,10 @@ nutri_clean <- nutri_tidy %>%
                        Nutrient, "[\\]]", "")
                ) %>% 
         arrange(foodGroup, foodItem)
-DT::datatable(nutri_clean)
+# DT::datatable(nutri_clean)
 ```
 
 Now when we search for "Donut" on the search window we no longer see it with quotation marks.
-
-When we `glimpse()` the data we still see that the variable types are not accordingly 
-```{r}
-glimpse(nutri_clean)
-```
-
-
-Convert variable types to their actual type
-```{r}
-nutri_clean <- readr::type_convert(nutri_clean)
-
-glimpse(nutri_clean)
-
-```
 
 Save the cleaned dataset to use it later in the Shiny app
 ```{r, eval = FALSE}
