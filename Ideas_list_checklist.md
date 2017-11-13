@@ -15,7 +15,9 @@
   
 - [x] Compare Food by Nutrient
 - [x] Add a graph visualization to find and compare food items 
-- [ ] Correct labels in the plot
+- [x] Correct graph display (1 column and bars together)
+- [x] Correct labels in the plot
+- [ ] Add radio button to visualize table and/or plot
 - [ ] Add radio button to visualize graph faceting by unit or by nutrient+unit
 - [ ] Add radio buttons to compare by 100g or by portion size (household measures)
 

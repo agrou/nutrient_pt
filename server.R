@@ -190,6 +190,9 @@ shinyServer(function(input, output, session) {
 
         )
         
+        ## Food section
+        ### Food tab
+        
         output$CompareFood_Plot <- renderPlotly({
                 
                 nutri_comp <- nutri_new %>%
@@ -202,11 +205,18 @@ shinyServer(function(input, output, session) {
                if(!is.null(input$inputID) && !is.null(input$nutrientID)){ 
                
                        g <- ggplot(data = nutri_comp,
-                                aes(x = Food, y = Value, fill = as_factor(Nutrient))) +
-                        geom_bar(stat = "identity", position = "dodge") +
+                                aes(x = Food, y = Value, fill = Nutrient)) +
+                        geom_bar( 
+                                 position=position_dodge(0.9), stat = "identity") +
                         coord_flip() + 
-                               facet_wrap(~Unit, scales = "free")
-                        #ggthemes::theme_fivethirtyeight()
+                               facet_wrap(~Unit, scales = "free", ncol = 1) +
+                               labs(title = "Nutritional values of selected food items\n", 
+                                  x = "", y = "", fill = "") + 
+                               scale_fill_ptol() +
+                               theme(legend.position = "right", 
+                                     plot.title = element_text(vjust=2)) +
+                        theme_minimal() 
+                       
                         CompareFood_Plot <- plotly_build(g)
                         CompareFood_Plot$elementId <- NULL
                         CompareFood_Plot
