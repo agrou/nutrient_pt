@@ -34,7 +34,7 @@ shinyUI(dashboardPage(
         dashboardBody(
                
                 tabItems(
-                        #Food tab content
+                        #Food section content
                         tabItem(tabName = "Food",
                                 fluidRow(
                                         
@@ -43,6 +43,8 @@ shinyUI(dashboardPage(
                                                 title = h2(strong("Explore and compare food items")),
                                                 # The id lets us use input$tabset1 on the server to find the current tab
                                                 id = "Food", height = "250px",
+                                                
+                                                # Food tab
                                                 tabPanel("Food", h3("Compare food items' nutritional composition"),
                                                          br(), 
                                                          selectizeInput("inputID", h4("Select one or more food items to compare"), 
@@ -56,12 +58,17 @@ shinyUI(dashboardPage(
                                                          
                                                          #submitButton("Update table", icon("refresh")), br(), br(),
                                                          dataTableOutput("CompareFood"),
-                                                         plotlyOutput("CompareFood_Plot"),
-                                                         plotlyOutput("EnergyPlot", width = "1000px")),
+                                                         plotlyOutput("CompareFood_Plot")),
+                                                         
+                                                
+                                                # Nutrient tab
                                                 tabPanel("Nutrient", h3("Get a list of food items by manipulating nutritional values"),
-                                                         selectizeInput("nutChoiceID", h4("Select nutritional component"), br(),
+                                                         box(selectizeInput("nutChoiceID", h4("Select nutritional component"), br(),
                                                                         choices = unique(nutri_new$Nutrient), multiple = FALSE),
-                                                         uiOutput("intervalControls"),
+                                                         uiOutput("intervalControls")),
+                                                         box(selectizeInput("nutChoiceID2", h4("Select nutritional component"), br(),
+                                                                        choices = unique(nutri_new$Nutrient), multiple = FALSE),
+                                                             uiOutput("intervalControls2")),
                                                                         
                                                          dataTableOutput("NutriTable"))
                                         )
@@ -72,7 +79,7 @@ shinyUI(dashboardPage(
                                         # )
                         #),
                         
-                        # Recipes tab content
+                        # Recipes section content
                         tabItem(tabName = "Recipes",
                                 
                                 fluidRow(
@@ -133,7 +140,7 @@ shinyUI(dashboardPage(
                                 ))
                         ),
                         
-                        # Meals tab content
+                        # Meals section content
                         tabItem(tabName = "Meals",
                                 fluidRow(
                                         box(title = "Make a meal",
@@ -147,7 +154,7 @@ shinyUI(dashboardPage(
                                 )
                         ),
                         
-                        # 24h Plan tab content
+                        # 24h Plan section content
                         tabItem(tabName = "24hPlan",
                                 fluidRow(
                                         box(title = "Make a 24h Plan",

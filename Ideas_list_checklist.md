@@ -20,12 +20,16 @@
 - [ ] Add radio button to visualize table and/or plot
 - [ ] Add radio button to visualize graph faceting by unit or by nutrient+unit
 - [ ] Add radio buttons to compare by 100g or by portion size (household measures)
+- [ ] Add food groups selection to the selectize.js button 
+- [ ] Add option of only showing information for macronutrients. Calculate the convertion of each macronutrient into energy with percentage of each macronutrient for the total energetic value of each food item.
 
   **1.2. Nutrient tab**
   
+Objective: get lists of food items per nutrient selection: Nutrient quantity in grams and percentage of energy of each macronutrient 
 - [ ] Correct slider updated range numeric labels (getting value from previous and not current input) 
 - [ ] Add button to select by FoodGroup 
 - [ ] Don't show FoodID variable
+- [ ] Enable changing the quantity of food items (portion sizes) - later
 
 **2. Recipe section**
 

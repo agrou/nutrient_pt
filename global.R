@@ -3,6 +3,7 @@
 library(shiny)
 library(shinydashboard)
 library(tidyverse)
+library(dplyr)
 library(stringr)
 library(data.table)
 library(DT)
