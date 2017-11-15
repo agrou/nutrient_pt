@@ -5,6 +5,7 @@
 - [x] Add sections to the dashboard and add icons 
 - [x] Correct for filtering Energia - It's matching both [kcal] and [kJ]
 - [ ] Correct conditional UIs  
+- [ ] Creating factors of variables (Food name + Food id number; Nutrient name + Nutrient id number)
 
 
 ### Sections:
