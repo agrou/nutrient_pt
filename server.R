@@ -3,12 +3,6 @@
 # You can find out more about building applications with Shiny here:
 #
 # http://shiny.rstudio.com
-#
-
-# Load data
-# load("nutri_clean.RData", envir = .GlobalEnv)
-# load("nutri_wide.RData", envir = .GlobalEnv)
-# load("nutri_long.RData", envir = .GlobalEnv)
 
 shinyServer(function(input, output, session) {
         
@@ -17,18 +11,16 @@ shinyServer(function(input, output, session) {
         
         output$intervalControls <- renderUI({
                 #tagList(
-                        sliderInput("rangeID", h4(""),
+                        sliderInput("rangeID", h4("Choose values range"),
                                     min = slider$values[1], max = slider$values[2],
                                     value = c(slider$values[2]/4, slider$values[2]/2))
                 #)
                })
         
         output$intervalControls2 <- renderUI({
-                #tagList(
-                sliderInput("rangeID2", h4(""),
+                sliderInput("rangeID2", h4("Choose values range"),
                             min = slider2$values[1], max = slider2$values[2],
                             value = c(slider2$values[2]/4, slider2$values[2]/2))
-                #)
         })
         
         slider <- reactiveValues(values = NULL)
@@ -37,19 +29,15 @@ shinyServer(function(input, output, session) {
                
                 nutri_table <- NutriTable()
                 # nutri_table <- nutri_new %>%
-                #         filter(Nutrient %in% c(input$nutChoiceID)) %>%
-                #         select(-FoodID)
-                                
+                #         filter(Nutrient %in% c(input$nutChoiceID)) 
                 
                 input_max <- range(nutri_table$Value)[2]
                 input_min <- range(nutri_table$Value)[1]
                 
                 slider$values[2] <- input_max 
                 slider$values[1] <- input_min
-         
-                 # updateSliderInput(session, "rangeID",
-                 #                  label = "something", min = slider$values[1], max = slider$values[2], 
-                 #                  value = c(slider$values[2]/4, slider$values[2]/2))
+                
+                
          
          })
         
@@ -58,6 +46,9 @@ shinyServer(function(input, output, session) {
         observeEvent(input$nutChoiceID2, {
                 
                 nutri_table <- NutriTable2()
+                # nutri_table <- nutri_new %>%
+                #         filter(Nutrient %in% c(input$nutChoiceID2)) 
+                
                 
                 input_max <- range(nutri_table$Value)[2]
                 input_min <- range(nutri_table$Value)[1]
@@ -65,87 +56,64 @@ shinyServer(function(input, output, session) {
                 slider2$values[2] <- input_max 
                 slider2$values[1] <- input_min
                 
-                # updateSliderInput(session, "rangeID",
-                #                  label = "something", min = slider$values[1], max = slider$values[2], 
-                #                  value = c(slider$values[2]/4, slider$values[2]/2))
-                
         })
         
         NutriTable <- reactive({
-                
-                if(is.null(input$nutChoiceID)) { 
-                        return(NULL) 
-                
-               # } else if (!is.null(input$nutChoiceID)){
-               #  
-               #  nutri_table <- nutri_new %>%
-               #          filter(Nutrient %in% c(input$nutChoiceID)) %>%
-               #          select(-FoodID)
-               #  } else if (!is.null(input$nutChoiceID2) && is.null(input$nutChoiceID)){
-               #          nutri_choice2 <- nutri_new %>%
-               #                  filter(Nutrient %in% c(input$nutChoiceID2)) %>%
-               #                  select(-FoodID)
-                # } else if (!is.null(input$nutChoiceID) && !is.null(input$nutChoiceID2)) {
-                #         nutri_choice3 <- nutri_new %>%
-                #                 filter(Nutrient %in% c(input$nutChoiceID, input$nutChoiceID2)) %>%
-                #                 select(-FoodID)
-                
+                if(is.null(input$nutChoiceID)){
+                        return(NULL)
                 } else {
                         
-                        nutri_new %>%
-                        filter(Nutrient %in% c(input$nutChoiceID)) %>%
-                        select(-FoodID)
+                        nutri_table <- nutri_new %>%
+                                filter(Nutrient %in% c(input$nutChoiceID)) 
                 }
-                        
         })
         
         NutriTable2 <- reactive({
-                if(is.null(input$nutChoiceID)) { 
-                        return(NULL) 
-                        
+                if(is.null(input$nutChoiceID2)){
+                        return(NULL)
                 } else {
                         
-                        nutri_new %>%
-                                filter(Nutrient %in% c(input$nutChoiceID2)) %>%
-                                select(-FoodID)
+                nutri_table <- nutri_new %>%
+                        filter(Nutrient %in% c(input$nutChoiceID2)) 
                 }
-                        
         })
         
-        # Goal to solve:
-        # I want to join the first table (filtered foods for specific nutrient quantity) with the original table keeping only foods in the first 
-        # and adding all nutrients from the second. Then filter for the quantity of the second nutrient 
-        
         output$NutriTable <- renderDataTable({
-                # nutrient_wide <- nutri_long %>%
-                #         select(Food, Quantity, Nutrient, Unit, Value) %>%
-                #         unite(Nutrient, Nutrient, Unit, sep = " (") %>%
-                #         mutate(Nutrient = str_c(Nutrient, ")")) %>%
-                #         spread(Nutrient, Value) 
                 
                 if(is.null(input$nutChoiceID) && is.null(input$nutChoiceID2)) { 
                         return(NULL) 
                         
-                } else if (input$nutChoiceID > 1) {             
-                        table_one <- NutriTable() %>%
+                } else if (!is.null(input$nutChoiceID) && !is.null(input$nutChoiceID2)) {
+                        
+                        nutri_table1 <- NutriTable() %>%
+                                #nutri_new %>%
+                                #filter(Nutrient %in% c(input$nutChoiceID)) %>%
                                 filter(between(Value, input$rangeID[1], input$rangeID[2])) %>%
-                                #filter(between(Value, input$rangeID2[1], input$rangeID2[2])) %>%
-                                arrange(desc(Value))
-                        table_one
-                
-                } else if (input$nutChoiceID2 > 1) {
-                        table_two <- NutriTable2() %>%
+                                select(Food, Quantity, Nutrient, Value, Unit) %>%
+                                unite(Nutrient, Nutrient, Unit, sep = " (") %>%
+                                mutate(Nutrient = str_c(Nutrient, ")")) %>%
+                                spread(Nutrient, Value)
+                        
+                        nutri_table2 <- NutriTable2() %>%
+                                #nutri_new %>%
+                                #filter(Nutrient %in% c(input$nutChoiceID2)) %>%
                                 filter(between(Value, input$rangeID2[1], input$rangeID2[2])) %>%
-                                arrange(desc(Value))
-                        table_two
-                # } else if (input$nutChoiceID2 > 1 && input$nutChoiceID > 1) {
-                #         table_double <- full_join(table_one, table_two) %>%
-                #                 arrange(desc(Value))
-                #         table_double
+                                select(Food, Quantity, Nutrient, Value, Unit) %>%
+                                unite(Nutrient, Nutrient, Unit, sep = " (") %>%
+                                mutate(Nutrient = str_c(Nutrient, ")")) %>%
+                                spread(Nutrient, Value)
+                        
+                        nutri_one <- inner_join(nutri_table1, nutri_table2, 
+                                                by = c("Food", "Quantity"))
+                        
+                } else if (is.null(input$nutChoiceID) && !is.null(input$nutChoiceID2)){
+                        
+                        nutri_table2
                                 
-                
                 } else {
-                        NULL
+                        
+                        nutri_table1 
+                        
                 }
                 
         })
