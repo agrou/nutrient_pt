@@ -113,8 +113,8 @@ shinyUI(dashboardPage(
                                             #submitButton("Update table", icon("refresh", lib = "glyphicon")), br(),
                                             
                                             actionButton("AddIngredient", "Update table", icon("refresh")),
-                                            #br(), br(),
                                             actionButton("RemoveIngredient", "Delete rows", icon("erase", lib = "glyphicon")),
+                                            br(), 
                                             dataTableOutput("RecipeTable"),
                                             br(), br(),
                                             textInput("recipeID", 

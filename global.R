@@ -19,7 +19,9 @@ load("data/nutri_clean.RData")
 load("data/nutri_wide.RData")
 load("data/nutri_new.RData")
 
-### App features
+### Features
+
+#A simple app but with a lot of working components
 
 # Compare food ingredients and prepare recipes
 # Add & Remove buttons change input_current$ingredients.

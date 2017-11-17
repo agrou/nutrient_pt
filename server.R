@@ -12,15 +12,18 @@ shinyServer(function(input, output, session) {
         output$intervalControls <- renderUI({
                 #tagList(
                         sliderInput("rangeID", h4("Choose values range"),
-                                    min = slider$values[1], max = slider$values[2],
-                                    value = c(slider$values[2]/4, slider$values[2]/2))
+                                    min = slider$values[1], 
+                                    max = slider$values[2],
+                                    value = c(slider$values[2]/4, 
+                                              slider$values[2]/2))
                 #)
                })
         
         output$intervalControls2 <- renderUI({
                 sliderInput("rangeID2", h4("Choose values range"),
                             min = slider2$values[1], max = slider2$values[2],
-                            value = c(slider2$values[2]/4, slider2$values[2]/2))
+                            value = c(floor(slider2$values[2]/4), 
+                                      slider2$values[2]/2))
         })
         
         slider <- reactiveValues(values = NULL)
@@ -36,9 +39,6 @@ shinyServer(function(input, output, session) {
                 
                 slider$values[2] <- input_max 
                 slider$values[1] <- input_min
-                
-                
-         
          })
         
         slider2 <- reactiveValues(values = NULL)
@@ -83,12 +83,14 @@ shinyServer(function(input, output, session) {
                 if(is.null(input$nutChoiceID) && is.null(input$nutChoiceID2)) { 
                         return(NULL) 
                         
-                } else if (!is.null(input$nutChoiceID) && !is.null(input$nutChoiceID2)) {
+                } else if (!is.null(input$nutChoiceID) && 
+                           !is.null(input$nutChoiceID2)) {
                         
                         nutri_table1 <- NutriTable() %>%
                                 #nutri_new %>%
                                 #filter(Nutrient %in% c(input$nutChoiceID)) %>%
-                                filter(between(Value, input$rangeID[1], input$rangeID[2])) %>%
+                                filter(between(Value, input$rangeID[1], 
+                                               input$rangeID[2])) %>%
                                 select(Food, Quantity, Nutrient, Value, Unit) %>%
                                 unite(Nutrient, Nutrient, Unit, sep = " (") %>%
                                 mutate(Nutrient = str_c(Nutrient, ")")) %>%
@@ -97,7 +99,8 @@ shinyServer(function(input, output, session) {
                         nutri_table2 <- NutriTable2() %>%
                                 #nutri_new %>%
                                 #filter(Nutrient %in% c(input$nutChoiceID2)) %>%
-                                filter(between(Value, input$rangeID2[1], input$rangeID2[2])) %>%
+                                filter(between(Value, input$rangeID2[1], 
+                                               input$rangeID2[2])) %>%
                                 select(Food, Quantity, Nutrient, Value, Unit) %>%
                                 unite(Nutrient, Nutrient, Unit, sep = " (") %>%
                                 mutate(Nutrient = str_c(Nutrient, ")")) %>%
@@ -106,7 +109,8 @@ shinyServer(function(input, output, session) {
                         nutri_one <- inner_join(nutri_table1, nutri_table2, 
                                                 by = c("Food", "Quantity"))
                         
-                } else if (is.null(input$nutChoiceID) && !is.null(input$nutChoiceID2)){
+                } else if (is.null(input$nutChoiceID) && 
+                           !is.null(input$nutChoiceID2)){
                         
                         nutri_table2
                                 
@@ -119,7 +123,8 @@ shinyServer(function(input, output, session) {
         })
         
         
-        #### Recipes tab
+        #### Recipes tab #########################################
+        
         output$QuantitySelection <- renderUI({
                 numericInput("QuantityID",
                              "Change the quantity for each food ingredient", "",
@@ -131,9 +136,11 @@ shinyServer(function(input, output, session) {
         observeEvent(input$AddIngredient, {
                 print('update occured')
                 input_prev <- session$userData$saveIng
-                input_cur <- data_frame(Food = input$ingredientID, Portion = input$QuantityID)
+                input_cur <- data_frame(Food = input$ingredientID, 
+                                        Portion = input$QuantityID)
                 # NOTE: instead of a bind rows, should join and update the value instead. So that we dont get duplicates
-                input_cur <- bind_rows(input_prev, input_cur) %>% distinct(Food, Portion)
+                input_cur <- bind_rows(input_prev, input_cur) %>% 
+                        distinct(Food, Portion)
                 
                 session$userData$saveIng <- input_cur
                 input_current$ingredients <- input_cur
@@ -219,13 +226,15 @@ shinyServer(function(input, output, session) {
                 if(!is.null(input$inputID) && is.null(input$nutrientID)){
                                 nutri_compare() %>%
                                 filter(str_detect(Food, str_c(str_match(input$inputID,
-                                                                        "^[\\w-\\w+\\s\\[\\w\\]]+"), collapse = "|")))
+                                                                        "^[\\w-\\w+\\s\\[\\w\\]]+"), 
+                                                              collapse = "|")))
 
 
 
                                 } else if (!is.null(input$nutrientID) && !is.null(input$inputID)) {
                                         nutri_compare() %>%
-                                                filter(str_detect(Food, str_c(str_match(input$inputID, "^[\\w-\\w+\\s\\[\\w\\]]+"),
+                                                filter(str_detect(Food, str_c(str_match(
+                                                        input$inputID, "^[\\w-\\w+\\s\\[\\w\\]]+"),
                                                                               collapse = "|")))
 
                                 } else if (!is.null(input$nutrientID) && is.null(input$inputID)){
