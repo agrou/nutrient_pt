@@ -7,7 +7,109 @@
 shinyServer(function(input, output, session) {
         
         
-        ### Food tab ## Nutrient section
+        ## 1. Food section >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        ### 1.1. Food tab
+        
+        ## Create reactive dataset to compare food ingredients
+        nutri_compare <- reactive({
+                if(is.null(input$inputID) & is.null(input$nutrientID)){
+                        return(NULL)
+                }
+                
+                nutri_comp <- nutri_new %>%
+                        select(Food, Quantity, Nutrient, Unit, Value) %>%
+                        unite(Nutrient, Nutrient, Unit, sep = " (") %>%
+                        mutate(Nutrient = str_c(Nutrient, ")")) %>%
+                        spread(Nutrient, Value) %>%
+                        select(Food, Quantity,
+                               str_subset(names(.),
+                                          str_c(str_match(input$nutrientID,
+                                                          "^[\\w-\\w+\\s]+"),
+                                                collapse = "|")))
+                
+        })
+        
+        values <- reactiveValues(compare_food = NULL)
+        
+        observeEvent(input$ResetID, {
+                print('reset occured')
+                # this is not working yet
+        })
+        
+        
+        ## Output first table to compare food
+        output$CompareFood <- renderDataTable(
+                if(!is.null(input$inputID) && is.null(input$nutrientID)){
+                        nutri_compare() %>%
+                                filter(str_detect(Food, str_c(str_match(input$inputID,
+                                                                        "^[\\w-\\w+\\s\\[\\w\\]]+"), 
+                                                              collapse = "|")))
+                        
+                        
+                        
+                } else if (!is.null(input$nutrientID) && !is.null(input$inputID)) {
+                        nutri_compare() %>%
+                                filter(str_detect(Food, str_c(str_match(
+                                        input$inputID, "^[\\w-\\w+\\s\\[\\w\\]]+"),
+                                        collapse = "|")))
+                        
+                } else if (!is.null(input$nutrientID) && is.null(input$inputID)){
+                        nutri_compare()
+                        
+                } else {
+                        NULL
+                        
+                }
+                
+                ,options = list(
+                        pageLength = 5
+                )
+                
+        )
+        
+        ## Output plot to compare food items
+        
+        output$CompareFood_Plot <- renderPlotly({
+                
+                nutri_comp <- nutri_new %>%
+                        select(Food, Quantity, Nutrient, Unit, Value) %>%
+                        #unite(Nutrient, Nutrient, Unit, sep = " (") %>%
+                        #mutate(Nutrient = str_c(Nutrient, ")")) %>%
+                        filter(Food %in% input$inputID) %>%
+                        filter(Nutrient %in% input$nutrientID)
+                
+                if(!is.null(input$inputID) && !is.null(input$nutrientID)){ 
+                        
+                        g <- ggplot(data = nutri_comp,
+                                    aes(x = Food, y = Value, fill = Nutrient)) +
+                                geom_bar( 
+                                        position=position_dodge(0.9), stat = "identity") +
+                                coord_flip() + 
+                                facet_wrap(~Unit, scales = "free", ncol = 1) +
+                                labs(title = "Nutritional values of selected food items\n", 
+                                     x = "", y = "", fill = "") + 
+                                scale_fill_ptol() +
+                                theme(legend.position = "right", 
+                                      plot.title = element_text(vjust=2)) +
+                                theme_minimal() 
+                        
+                        CompareFood_Plot <- plotly_build(g)
+                        CompareFood_Plot$elementId <- NULL
+                        CompareFood_Plot
+                        
+                        # plot_ly(nutri_comp, x = ~Nutrient, y = ~Value, color = ~Food, 
+                        #         type = "bar", text = ~paste("Food:", Food))
+                        
+                        
+                } else {
+                        plotly_empty()
+                }
+                
+        })
+        
+        ## 1.2. Nutrient tab
+        
+        ## Define sliders
         
         output$intervalControls <- renderUI({
                 #tagList(
@@ -26,6 +128,7 @@ shinyServer(function(input, output, session) {
                                       slider2$values[2]/2))
         })
         
+        ## react to slider values
         slider <- reactiveValues(values = NULL)
 
         observeEvent(input$nutChoiceID, {
@@ -58,6 +161,7 @@ shinyServer(function(input, output, session) {
                 
         })
         
+        ## make reactive tables for slider inputs
         NutriTable <- reactive({
                 if(is.null(input$nutChoiceID)){
                         return(NULL)
@@ -77,6 +181,8 @@ shinyServer(function(input, output, session) {
                         filter(Nutrient %in% c(input$nutChoiceID2)) 
                 }
         })
+        
+        ## Output table for sorting foods based on nutrient selection
         
         output$NutriTable <- renderDataTable({
                 
@@ -123,16 +229,18 @@ shinyServer(function(input, output, session) {
         })
         
         
-        #### Recipes tab #########################################
+        #### Recipes tab  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
+        ##  Define quantity input
         output$QuantitySelection <- renderUI({
                 numericInput("QuantityID",
                              "Change the quantity for each food ingredient", "",
                              min = 0.1, max = 1000, width = '100%')})
 
-        
+        ## make input reactive to user interactions
         input_current <- reactiveValues(ingredients = NULL)
         
+        ## Update button for user addition
         observeEvent(input$AddIngredient, {
                 print('update occured')
                 input_prev <- session$userData$saveIng
@@ -145,7 +253,7 @@ shinyServer(function(input, output, session) {
                 session$userData$saveIng <- input_cur
                 input_current$ingredients <- input_cur
         })
-        
+        ## Remove  button for deleting selected rows
         observeEvent(input$RemoveIngredient, {
                 print('delete occured')
                 input_prev <- session$userData$saveIng
@@ -159,12 +267,13 @@ shinyServer(function(input, output, session) {
                 
                 input_current$ingredients <- input_cur
         })
-        
+        ## Save button to save user input - save recipe
         observeEvent(input$SaveTable, {
                 print('save occured')
                 #new_recipe <- input$RecipeTable
         })
         
+        ## Create a reactive dataset dependent on the ingredients input
         nutri_filtered <- reactive({
                 if(is.null(input_current$ingredients)) 
                         return(NULL)
@@ -177,6 +286,7 @@ shinyServer(function(input, output, session) {
                 select(Food, Quantity, Nutrient, Unit, Value) 
         })
         
+        ## Create a final dataset dependent on filtered data
         nutri_sum <- reactive({
                 if(is.null(nutri_filtered())) 
                         return(NULL)
@@ -188,108 +298,13 @@ shinyServer(function(input, output, session) {
                 select(Food, Quantity, Nutrient, Unit, Value, Total)
         })
         
+        ## Output the recipes dataset 
         output$RecipeTable <- DT::renderDataTable({
                 DT::datatable(nutri_sum(), options = list(orderClasses = TRUE))
         })
         
 
-        #### Food tab
-        ## Create reactive dataset to compare food ingredients
-        nutri_compare <- reactive({
-                if(is.null(input$inputID) & is.null(input$nutrientID)){
-                        return(NULL)
-                }
-
-                 nutri_comp <- nutri_new %>%
-                        select(Food, Quantity, Nutrient, Unit, Value) %>%
-                        unite(Nutrient, Nutrient, Unit, sep = " (") %>%
-                        mutate(Nutrient = str_c(Nutrient, ")")) %>%
-                        spread(Nutrient, Value) %>%
-                        select(Food, Quantity,
-                               str_subset(names(.),
-                                          str_c(str_match(input$nutrientID,
-                                                          "^[\\w-\\w+\\s]+"),
-                                                          collapse = "|")))
-
-        })
-        
-        values <- reactiveValues(compare_food = NULL)
-        
-        observeEvent(input$ResetID, {
-                print('reset occured')
-                
-        })
         
         
-        ## Output first table to compare food
-        output$CompareFood <- renderDataTable(
-                if(!is.null(input$inputID) && is.null(input$nutrientID)){
-                                nutri_compare() %>%
-                                filter(str_detect(Food, str_c(str_match(input$inputID,
-                                                                        "^[\\w-\\w+\\s\\[\\w\\]]+"), 
-                                                              collapse = "|")))
-
-
-
-                                } else if (!is.null(input$nutrientID) && !is.null(input$inputID)) {
-                                        nutri_compare() %>%
-                                                filter(str_detect(Food, str_c(str_match(
-                                                        input$inputID, "^[\\w-\\w+\\s\\[\\w\\]]+"),
-                                                                              collapse = "|")))
-
-                                } else if (!is.null(input$nutrientID) && is.null(input$inputID)){
-                                        nutri_compare()
-
-                                } else {
-                                        NULL
-
-                                }
-
-                        ,options = list(
-                                pageLength = 5
-                        )
-
-        )
-        
-        ## Food section
-        ### Food tab
-        
-        output$CompareFood_Plot <- renderPlotly({
-                
-                nutri_comp <- nutri_new %>%
-                        select(Food, Quantity, Nutrient, Unit, Value) %>%
-                        #unite(Nutrient, Nutrient, Unit, sep = " (") %>%
-                        #mutate(Nutrient = str_c(Nutrient, ")")) %>%
-                        filter(Food %in% input$inputID) %>%
-                        filter(Nutrient %in% input$nutrientID)
-                
-               if(!is.null(input$inputID) && !is.null(input$nutrientID)){ 
-               
-                       g <- ggplot(data = nutri_comp,
-                                aes(x = Food, y = Value, fill = Nutrient)) +
-                        geom_bar( 
-                                 position=position_dodge(0.9), stat = "identity") +
-                        coord_flip() + 
-                               facet_wrap(~Unit, scales = "free", ncol = 1) +
-                               labs(title = "Nutritional values of selected food items\n", 
-                                  x = "", y = "", fill = "") + 
-                               scale_fill_ptol() +
-                               theme(legend.position = "right", 
-                                     plot.title = element_text(vjust=2)) +
-                        theme_minimal() 
-                       
-                        CompareFood_Plot <- plotly_build(g)
-                        CompareFood_Plot$elementId <- NULL
-                        CompareFood_Plot
-               
-             # plot_ly(nutri_comp, x = ~Nutrient, y = ~Value, color = ~Food, 
-             #         type = "bar", text = ~paste("Food:", Food))
-                       
-                
-                 } else {
-                        plotly_empty()
-                 }
-                
-        })
 
 })
