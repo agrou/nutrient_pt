@@ -18,7 +18,7 @@ This is how the app looks like:
 
 - To run the app you need to download this project, open the `nutrient_pt.Rproj` in RStudio. 
 
-- Before running the app you need to populate the `nutrient_app/data` subdirectory with the data that is obtained by running `Tidy_Nutri_Data.Rmd` file (see more instructions below in *2. About the data*).
+- Before running the app you need to create a new subdirectory `data` under `nutrient_app` (`nutrient_app/data`) and populate the  subdirectory with the data that is obtained by running `Tidy_Nutri_Data.Rmd` file (see more instructions below in *2. About the data*).
 
 ### 2. About the data
 
