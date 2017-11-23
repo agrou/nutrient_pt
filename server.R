@@ -113,7 +113,7 @@ shinyServer(function(input, output, session) {
         
         output$intervalControls <- renderUI({
                 #tagList(
-                        sliderInput("rangeID", h4("Choose values range"),
+                        sliderInput("rangeID", h4(""),
                                     min = slider$values[1], 
                                     max = slider$values[2],
                                     value = c(slider$values[2]/4, 
@@ -122,7 +122,7 @@ shinyServer(function(input, output, session) {
                })
         
         output$intervalControls2 <- renderUI({
-                sliderInput("rangeID2", h4("Choose values range"),
+                sliderInput("rangeID2", h4(""),
                             min = slider2$values[1], max = slider2$values[2],
                             value = c(floor(slider2$values[2]/4), 
                                       slider2$values[2]/2))
@@ -133,9 +133,9 @@ shinyServer(function(input, output, session) {
 
         observeEvent(input$nutChoiceID, {
                
-                nutri_table <- NutriTable()
-                # nutri_table <- nutri_new %>%
-                #         filter(Nutrient %in% c(input$nutChoiceID)) 
+                #nutri_table <- NutriTable()
+                nutri_table <- nutri_new %>%
+                        filter(Nutrient %in% c(input$nutChoiceID))
                 
                 input_max <- range(nutri_table$Value)[2]
                 input_min <- range(nutri_table$Value)[1]
@@ -148,9 +148,9 @@ shinyServer(function(input, output, session) {
         
         observeEvent(input$nutChoiceID2, {
                 
-                nutri_table <- NutriTable2()
-                # nutri_table <- nutri_new %>%
-                #         filter(Nutrient %in% c(input$nutChoiceID2)) 
+                #nutri_table <- NutriTable2()
+                nutri_table <- nutri_new %>%
+                        filter(Nutrient %in% c(input$nutChoiceID2))
                 
                 
                 input_max <- range(nutri_table$Value)[2]
@@ -161,75 +161,69 @@ shinyServer(function(input, output, session) {
                 
         })
         
-        ## make reactive tables for slider inputs
-        NutriTable <- reactive({
-                if(is.null(input$nutChoiceID)){
-                        return(NULL)
-                } else {
+        
+        ## Don't show the same nutrient in the second nutrient input
+
+        observe({
+                input_nut <- input$nutChoiceID
+
+                        second_nut <- nutri_wide %>%
+                        filter(Nutrient != input_nut) %>%
+                                select(Nutrient)
                         
-                        nutri_table <- nutri_new %>%
-                                filter(Nutrient %in% c(input$nutChoiceID)) 
-                }
+        # Correcting unexpected empty input values to avoid errors: 
+        # https://shiny.rstudio.com/articles/req.html
+        
+                updateSelectInput(session, "nutChoiceID2",
+                                label = "Select second nutrient and range values:",
+                                choices = unique(second_nut$Nutrient),
+                                selected = character(0)
+                                )
         })
         
-        NutriTable2 <- reactive({
-                if(is.null(input$nutChoiceID2)){
-                        return(NULL)
-                } else {
-                        
-                nutri_table <- nutri_new %>%
-                        filter(Nutrient %in% c(input$nutChoiceID2)) 
-                }
-        })
         
         ## Output table for sorting foods based on nutrient selection
         
         output$NutriTable <- renderDataTable({
                 
-                if(is.null(input$nutChoiceID) && is.null(input$nutChoiceID2)) { 
-                        return(NULL) 
-                        
-                } else if (!is.null(input$nutChoiceID) && 
-                           !is.null(input$nutChoiceID2)) {
-                        
-                        nutri_table1 <- NutriTable() %>%
-                                #nutri_new %>%
-                                #filter(Nutrient %in% c(input$nutChoiceID)) %>%
-                                filter(between(Value, input$rangeID[1], 
-                                               input$rangeID[2])) %>%
-                                select(Food, Quantity, Nutrient, Value, Unit) %>%
-                                unite(Nutrient, Nutrient, Unit, sep = " (") %>%
-                                mutate(Nutrient = str_c(Nutrient, ")")) %>%
-                                spread(Nutrient, Value)
-                        
-                        nutri_table2 <- NutriTable2() %>%
-                                #nutri_new %>%
-                                #filter(Nutrient %in% c(input$nutChoiceID2)) %>%
-                                filter(between(Value, input$rangeID2[1], 
-                                               input$rangeID2[2])) %>%
-                                select(Food, Quantity, Nutrient, Value, Unit) %>%
-                                unite(Nutrient, Nutrient, Unit, sep = " (") %>%
-                                mutate(Nutrient = str_c(Nutrient, ")")) %>%
-                                spread(Nutrient, Value)
-                        
-                        nutri_one <- inner_join(nutri_table1, nutri_table2, 
-                                                by = c("Food", "Quantity"))
-                        
-                } else if (is.null(input$nutChoiceID) && 
-                           !is.null(input$nutChoiceID2)){
-                        
-                        nutri_table2
+                        compFood <- reactive({
+                                req(input$nutChoiceID)
                                 
-                } else {
+                                if (isTruthy(input$nutChoiceID) & 
+                                    !isTruthy(input$nutChoiceID2)) {
+                                        nutri_new %>%
+                                                select(FoodID, Food, Nutrient, 
+                                                       Value, Quantity) %>%
+                                                filter((Nutrient == input$nutChoiceID & between(Value, input$rangeID[1], input$rangeID[2])))
+                                        
+                                } else {
+                                        nutri_new %>%
+                                                select(FoodID, Food, Nutrient, 
+                                                       Value, Quantity) %>%
+                                                filter(Nutrient == input$nutChoiceID & between(Value, input$rangeID[1], input$rangeID[2]) |
+                                                               (Nutrient == input$nutChoiceID2 & between(Value, input$rangeID2[1], input$rangeID2[2]))) %>%
+                                                group_by(FoodID) %>%
+                                                filter(n() == 2) %>%
+                                                ungroup() %>%
+                                                select(-FoodID)
+                                }
+                        })
                         
-                        nutri_table1 
                         
-                }
+                        if(nrow(compFood()) == 0){
+                                compFood()
+                        } else {
+                                DT::datatable({
+                                        compFood() %>%
+                                                spread(Nutrient, Value)
+                                })
+                        }
+                
                 
         })
         
         
-        #### Recipes tab  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+        #### Recipes  section >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
         
         ##  Define quantity input
         output$QuantitySelection <- renderUI({

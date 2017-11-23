@@ -121,9 +121,10 @@ nutri_tidy <- nutri_long %>%
   left_join(nUnit, by = c("foodID", "grpNtr")) %>% 
   left_join(nQty, by = c("foodID", "grpNtr")) %>% 
   # select(-grpNtr, -grpType) %>% 
-  mutate(NutrientCode = gsub(".*\\((.*)\\).*", "\\1", Nutrient)) %>% 
+  mutate(NutrientCode = gsub(".*\\((.*)\\).*", "\\1", Nutrient),
+         NutrientID = group_indices(. , Nutrient)) %>% 
   mutate(Value = as.numeric(Value)) %>% 
-  select(foodID, foodGroup, foodItem, Nutrient, NutrientCode, Value, Unit, Quantity) %>% 
+  select(foodID, foodGroup, foodItem, NutrientID, Nutrient, NutrientCode, Value, Unit, Quantity) %>%
   arrange(foodID, Nutrient)
 
   glimpse(nutri_tidy)
@@ -169,7 +170,7 @@ Save the cleaned dataset to use it later in the Shiny app
 Get data into wide format for food items
 ```{r}
 nutri_wide <- nutri_clean %>%
-        select(foodID, foodItem, Nutrient, Value, Unit, -Quantity) %>%
+        select(foodID, foodItem, NutrientID, Nutrient, Value, Unit, -Quantity) %>%
         group_by(foodItem) %>%
         select(-foodID) %>%
         spread(foodItem, Value) 
@@ -204,7 +205,7 @@ nutri_new <- nutri_clean %>%
         group_by(foodItem) %>%
         unite(Food, foodItem, Quantity_unit, sep = " (") %>%
         mutate(Food = str_c(Food, ")")) %>%
-        select(FoodID = foodID, Food, FoodGroup = foodGroup, Quantity, Nutrient, Unit, Value) 
+        select(FoodID = foodID, Food, FoodGroup = foodGroup, Quantity, NutrientID, Nutrient, Unit, Value) 
 head(nutri_new)
         
 #save(nutri_new, file = "data/nutri_new.RData", envir = .GlobalEnv)

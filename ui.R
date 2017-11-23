@@ -43,7 +43,7 @@ shinyUI(dashboardPage(
                                                 title = h2(strong("Explore and compare food items")),
                                                 # The id lets us use input$tabset1 on the server to find the current tab
                                                 id = "Food", height = "250px",
-                                                
+                                        tabsetPanel(
                                                 # Food tab
                                                 tabPanel("Food", h3("Compare food items' nutritional composition"),
                                                          br(), 
@@ -62,17 +62,19 @@ shinyUI(dashboardPage(
                                                          
                                                 
                                                 # Nutrient tab
-                                                tabPanel("Nutrient", h3("Get a list of food items by manipulating nutritional values"),
-                                                         box(selectizeInput("nutChoiceID", h4("Select nutritional component"), br(),
-                                                                        choices = unique(nutri_new$Nutrient), multiple = FALSE),
+                                                tabPanel("Nutrient", h4("Get a list of food items by manipulating nutritional values"),
+                                                         box(selectInput("nutChoiceID", 
+                                                                         label = "Select nutritional component and range values", br(),
+                                                                        choices = unique(nutri_wide$Nutrient), 
+                                                                        multiple = FALSE),
                                                          uiOutput("intervalControls")),
-                                                         box(selectizeInput("nutChoiceID2", h4("Select nutritional component"), br(),
-                                                                        choices = unique(nutri_new$Nutrient), multiple = FALSE),
+                                                         box(selectInput("nutChoiceID2", label = "Select nutritional component and range values", br(),
+                                                                        choices = unique(nutri_wide$Nutrient), multiple = FALSE),
                                                              uiOutput("intervalControls2")),
                                                                         
                                                          dataTableOutput("NutriTable"))
                                         )
-                                        )
+                                        ))
                                 ),
                                         
                                         
