@@ -54,22 +54,38 @@ shinyUI(dashboardPage(
                                                                         choices = unique(nutri_new$Nutrient), multiple = TRUE,
                                                                         width = 350),
                                                          
-                                                         actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
+                                                         #actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
                                                          
                                                          #submitButton("Update table", icon("refresh")), br(), br(),
+                                                         useShinyjs(),
+                                                         actionButton("PlotButton", "Hide/Show Plot",
+                                                                      icon = icon("bar-chart"), lib = "font-awesome",
+                                                                      style = "color: #fff; background-color: #2B76A6; border-color: #2B76A6"),
+                                                         actionButton("TableButton", "Hide/Show Table", 
+                                                                      icon = icon("table", lib = "font-awesome"), 
+                                                                      style = "color: #fff; background-color: #2E3331; border-color: #2E3331"),
+                                                         
+                                                         br(), br(),
                                                          dataTableOutput("CompareFood"),
+                                                         hr(),
                                                          plotlyOutput("CompareFood_Plot")),
                                                          
                                                 
                                                 # Nutrient tab
                                                 tabPanel("Nutrient", h4("Get a list of food items by manipulating nutritional values"),
                                                          box(selectInput("nutChoiceID", 
-                                                                         label = "Select nutritional component and range values", br(),
-                                                                        choices = unique(nutri_wide$Nutrient), 
-                                                                        multiple = FALSE),
+                                                                        label = "Select nutritional component and range values",
+                                                                        choices = set_names(unique(nutri_new$NutrientID), unique(nutri_new$Nutrient)), 
+                                                                        multiple = FALSE,
+                                                                        selectize = FALSE,
+                                                                        selected = 14),
                                                          uiOutput("intervalControls")),
-                                                         box(selectInput("nutChoiceID2", label = "Select nutritional component and range values", br(),
-                                                                        choices = unique(nutri_wide$Nutrient), multiple = FALSE),
+                                                         box(selectizeInput("nutChoiceID2", label = "Select nutritional component and range values", 
+                                                                        choices = set_names(unique(nutri_new$NutrientID), unique(nutri_new$Nutrient)), 
+                                                                        multiple = FALSE,
+                                                                        selected = character(0),
+                                                                        options = list(placeholder = "Select second nutrient")
+                                                                        ),
                                                              uiOutput("intervalControls2")),
                                                                         
                                                          dataTableOutput("NutriTable"))

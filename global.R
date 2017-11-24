@@ -3,7 +3,7 @@
 library(shiny)
 library(shinydashboard)
 library(tidyverse)
-library(dplyr)
+library(dplyr, warn.conflicts = FALSE)
 library(stringr)
 library(data.table)
 library(DT)
@@ -11,6 +11,7 @@ library(ggplot2) # install with devtools::install_github('hadley/ggplot2') for c
 library(plotly)
 library(forcats)
 library(ggthemes)
+library(shinyjs)
 
 
 
@@ -18,6 +19,15 @@ library(ggthemes)
 load("data/nutri_clean.RData")
 load("data/nutri_wide.RData")
 load("data/nutri_new.RData")
+load("data/nutri_choice.RData")
+
+
+# New  dataset to show Nutrient with units
+# nutri_choice <- nutri_new %>% 
+#         unite(Nutrient, Nutrient, Unit, sep = " (") %>%
+#         mutate(Nutrient = str_c(Nutrient, ")")) 
+# 
+# save(nutri_choice, file = "data/nutri_choice.RData", envir = .GlobalEnv)
 
 ### Features
 
