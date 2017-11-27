@@ -22,12 +22,25 @@ load("data/nutri_new.RData")
 load("data/nutri_choice.RData")
 
 
+## Define default nutrients for recipes section
+RecipeNutrients <-  nutri_wide %>% 
+        filter(str_detect(Nutrient, "ENERCC|\\(CHO\\)|PROT|\\(FAT\\)")) %>% 
+        select(NutrientID) %>% 
+        as_vector()
+
 # New  dataset to show Nutrient with units
 # nutri_choice <- nutri_new %>% 
 #         unite(Nutrient, Nutrient, Unit, sep = " (") %>%
 #         mutate(Nutrient = str_c(Nutrient, ")")) 
 # 
 # save(nutri_choice, file = "data/nutri_choice.RData", envir = .GlobalEnv)
+
+## New dataset to show  less food observations (reduce memory usage in the ui selectInput)
+# food_wide <- nutri_choice %>%
+#         select(FoodID, Food, Nutrient, Value) %>%
+#         spread(Nutrient, Value)
+# 
+# save(food_wide, file = "data/food_wide.RData", envir = .GlobalEnv)
 
 ### Features
 
