@@ -268,29 +268,13 @@ shinyServer(function(input, output, session) {
                 }
         })
         
-        #comp_two <- reactive({
-                
-                
-                
-                
-        #})
-                #} else {
-
-                        
-               # }
-        #})
+       
        
         
         output$NutriTable <- renderDataTable({
                 if(nrow(comp_one()) == 0){
                         comp_one()
                 
-                
-                # if (isTruthy(input$nutChoiceID)) {
-                # DT::datatable({
-                #        comp_one() #%>%
-                #                 #spread(Nutrient, Value)
-                #         })
                 } else {
                 DT::datatable({
                          comp_one() %>%
@@ -299,21 +283,6 @@ shinyServer(function(input, output, session) {
                         } 
                 })
                 
-                #observe(print(compFood()))
-                        
-                        
-                        
-                        # if(is.null(input$nutChoiceID2)){
-                        #         compFood()
-                        # 
-                        # } else {
-                        #         DT::datatable({
-                        #                 compFood() %>%
-                        #                         spread(Nutrient, Value) 
-                        #         })
-                        # }
-                
-       # })
         
         
         #### Recipes  section >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -328,116 +297,117 @@ shinyServer(function(input, output, session) {
         input_current <- reactiveValues(ingredients = NULL, 
                                         nutrients = RecipeNutrients)
         
-        ## Update button for user addition
+        # Button to add ingredients to the table
         observeEvent(input$AddIngredient, {
                 req(input$AddIngredient)
                 
                 #print('update occured')
                 input_prev <- session$userData$saveIng
-                input_cur <- data_frame(FoodID = as.numeric(input$ingredientID), 
+                input_cur <- tibble(FoodID = as.numeric(input$ingredientID), 
                                         Portion = as.numeric(input$QuantityID))
-                # NOTE: instead of a bind rows, should join and update the value instead. So that we dont get duplicates
                 input_cur <- bind_rows(input_prev, input_cur) %>% 
                         distinct(FoodID, Portion)
                 
                 session$userData$saveIng <- input_cur
                 input_current$ingredients <- input_cur
         })
-        ## Remove  button for deleting selected rows
+       # Button to update nutrients shown in the table
         observeEvent({input$UpdateNutrient}, {
                 if(!isTruthy(input$NutrientSub)) {
-                        input_current$nutrients <- RecipeNutrient
+                        input_current$nutrients <- RecipeNutrients
                 } else {
                         input_current$nutrients <- input$NutrientSub
                 }
         })
-        
+        ## Button for deleting selected rows
         observeEvent(input$RemoveIngredient, {
+                
                 print('delete occured')
-                input_prev <- session$userData$saveIng
-                sel_rows <- input_prev[input$RecipeTable_rows_selected,]
+                
+                #input_prev <- session$userData$saveIng
+                #sel_rows <- input_prev %>% filter(row_number() %in% input$RecipeTable_rows_selected)
                  
-                input_cur <- input_prev %>%
-                        dplyr::distinct(FoodID, Portion) %>%
-                        anti_join(sel_rows)
+                nutri_cur <- nutri_filtered()
+                
+                input_cur <- nutri_cur %>%
+                        filter(!(row_number() %in% input$RecipeTable_rows_selected)) %>%
+                        rename(Portion = Quantity) %>%
+                        dplyr::distinct(FoodID, Portion) #%>%
+                        #anti_join(sel_rows) 
                 
                 session$userData$saveIng <- input_cur
                 
                 input_current$ingredients <- input_cur
         })
         ## Save button to save user input - save recipe
-        observeEvent(input$SaveTable, {
-                print('save occured')
-                #new_recipe <- input$RecipeTable
-        })
+        # observeEvent(input$SaveTable, {
+        #         print('save occured')
+        #         #new_recipe <- input$RecipeTable
+        # })
 
         
         ## Create a reactive dataset dependent on the ingredients input
         nutri_filtered <- reactive({
                 
-                if(is.null(input_current$ingredients))
+                if(!isTruthy(input_current$ingredients)){
                         return(NULL)
+                } else {
+                recipe <- nutri_choice %>%
+                                right_join(input_current$ingredients, by = "FoodID") %>%
+                                filter(NutrientID %in% input_current$nutrients) %>%
+                                mutate(Quantity = Portion,
+                                Value = (Portion * Value)/100) %>%
+                                select(FoodID, Food, Quantity, Nutrient, Value) }
                 
-                nutri_choice %>%
-                right_join(input_current$ingredients, by = "FoodID") %>%
-                filter(NutrientID %in% input_current$nutrients) %>%
-                mutate(Quantity = Portion,
-                       Value = (Portion * Value)/100) %>%
-                select(FoodID, Food, Quantity, Nutrient, Value) 
                 
-        })
-        
-        ## Create a final dataset dependent on filtered data
-        nutri_sum <- reactive({
-                
-                if(!isTruthy(nutri_filtered())){ 
-                        return(NULL)}
-                
-                if (nrow(nutri_filtered() > 0)){
+                if (nrow(recipe > 0)){
                         
-                sum <- nutri_filtered() %>%
+                sum <- recipe %>%
+                        #filter(!(FoodID == totalFoodID)) %>%
                         group_by(Nutrient) %>%
                         summarise(Total = sum(Value)) %>%
                         ungroup() %>%
                         mutate(Food = "Total") %>%
                         rename(Value = Total) 
                         
-        recipe <- nutri_filtered() %>%
+        recipe_total <- recipe %>%
                   bind_rows(sum) %>%
                   #select(Food, Quantity, Nutrient, Unit, Value, Total) #%>%
-                  spread(Nutrient, Value) %>%
-                  select(-FoodID)
+                  spread(Nutrient, Value) #%>%
+                  #select(-FoodID)
                 
                
                         
-               return(recipe)
+               return(recipe_total)
         
                 } else {
                         return(NULL)
                 }
-                        
                 
         })
         
         ## Output the recipes dataset 
         output$RecipeTable <- DT::renderDataTable({
                 
-                if(!isTruthy(nrow(nutri_sum()))) {
-                        return(NULL)    
-                } else {
-                        DT::datatable(nutri_sum(), options = list(orderClasses = TRUE))
+                if(isTruthy(nutri_filtered())){
+                        d <- nutri_filtered()
+                        
+                        DT::datatable(d, options = list(orderClasses = TRUE))
+                        
+                        } else {
+                                return(NULL)
                 }
-                
                 
         })
         
-        #outputOptions(output, 'RecipeTable', suspendWhenHidden=FALSE)
-        
-       # output$RemoveRows <- renderUI({
-       #         if(!is.null(output$RecipeTable)){
-       #                 actionButton("RemoveIngredient", "Remove selected row", icon("erase", lib = "glyphicon"),
-       #                              style = "color: #fff; background-color: #a79e84; border-color: #a79e84")
-       #         }
-       # })
+        # Show remove ingredient button only after table output
+        output$RemoveIngredientUi <- renderUI({
+                if(isTruthy(nrow(nutri_filtered()))){
+                        actionButton("RemoveIngredient", "Remove selected row", icon("erase", lib = "glyphicon"),
+                                     style = "color: #fff; background-color: #454140; border-color: #454140")
+                } else {
+                        return(NULL)
+                }
+        })
 })
 

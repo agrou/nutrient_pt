@@ -11,7 +11,7 @@ shinyUI(dashboardPage(
         skin = "black",
         
         
-        dashboardHeader(title = "Food Decisions"),
+        dashboardHeader(title = "Food Decisions", titleWidth = 350),
         
         # Sidebar content
         dashboardSidebar(disable = F, width = 350,
@@ -107,7 +107,6 @@ shinyUI(dashboardPage(
                                             collapsible = TRUE, collapsed = FALSE, 
                                             h2(strong("Create and compare recipes"),
                                                align = "center"), 
-                                            #img(src='pasta_noodles.jpg', width = '680px', align = 'center'),
                                             hr(),
                                             width = 12,
                                             p(h4(strong("Include the ingredients for the recipe and click on
@@ -126,7 +125,7 @@ shinyUI(dashboardPage(
                                                 selectizeInput("NutrientSub","3. Select nutritional component for the calculation",
                                                                choices = set_names(nutri_wide$NutrientID, nutri_wide$Nutrient), 
                                                                selected = RecipeNutrients, 
-                                                               multiple = TRUE, size = 5,
+                                                               multiple = TRUE,
                                                                options = list(placeholder = "Select one or more nutritional components")),
                                                 actionButton("AddIngredient", "Add ingredient", icon("grain", lib = "glyphicon"), 
                                                                 style = "color: #fff; background-color: #bd5734; border-color: #bd5734"),
@@ -136,15 +135,9 @@ shinyUI(dashboardPage(
                                            
                                             br(), 
                                             box(width = 12, dataTableOutput("RecipeTable"),
-                                            #actionButton("RemoveIngredient", "Remove selected ingredients", icon("erase", lib = "glyphicon")),
                                             br(), 
-                                            #uiOutput("removeRows"),
-                                            # conditionalPanel(
-                                            #         condition = "output.RecipeTable",
-                                                    actionButton("RemoveIngredient", "Remove selected row", icon("erase", lib = "glyphicon"),
-                                                                 style = "color: #fff; background-color: #454140; border-color: #454140")),
-                                            #),
-                                            br(), br(),
+                                            uiOutput("RemoveIngredientUi"))
+                                        
                                             # textInput("recipeID", 
                                             #           "Recipe name:", value = "Bolo de iogurte"),
                                             # br(),
@@ -153,21 +146,13 @@ shinyUI(dashboardPage(
                                             #uiOutput("load"),
                                             # actionButton("trashID", "Delete recipe", icon("trash", lib = "glyphicon")),
                                             # actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
-                                            verbatimTextOutput('row_selected'),
-                                            br(),
-                                            hr(),
-                                            #p(h4(strong("Get summaries for each nutritional component"))),
-                                            br()
-                                            
-                                        
+                                            #verbatimTextOutput('row_selected'),
                                             
                                             # http://rstudio.github.io/DT/shiny.html
                                             # https://community.rstudio.com
                                         
-                                            #dataTableOutput("RecipeSum"),
-                                            #verbatimTextOutput("Inglist"))
-                                ))
-                        ),
+                                )
+                        )),
                         
                         # Meals section content
                         tabItem(tabName = "Meals",
