@@ -12,15 +12,16 @@ library(plotly)
 library(forcats)
 library(ggthemes)
 library(shinyjs)
+library(here)
 
 
 
 # Load required data
-load("data/nutri_clean.RData")
-load("data/nutri_wide.RData")
-load("data/nutri_new.RData")
-load("data/nutri_choice.RData")
-load("data/food_wide.RData")
+load(here("data/nutri_clean.RData"))
+load(here("data/nutri_wide.RData"))
+load(here("data/nutri_new.RData"))
+load(here("data/nutri_choice.RData"))
+load(here("data/food_wide.RData"))
 
 ## Define default nutrients for recipes section
 RecipeNutrients <-  nutri_wide %>% 

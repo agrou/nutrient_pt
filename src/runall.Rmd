@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readxl)
 library(stringr)
-library(emojifont)
+library(here)
 ```
 
 ## Importing Nutri Data
@@ -35,7 +35,7 @@ Access to "Composição dos alimentos" tab, then select 'Pesquisa de Alimentos' 
 Save it in the folder `data` under the same working directory of the `nutrient_pt` project and read it as follows:
 
 ```{r importNutriData}
-nutri_orig <- read_xlsx("data/insa_tca.xlsx") 
+nutri_orig <- read_xlsx(here("data/insa_tca.xlsx")) 
 #glimpse(nutri_orig)
 ```
 
@@ -160,7 +160,7 @@ Now when we search for "Donut" on the search window we no longer see it with quo
 
 Save the cleaned dataset to use it later in the Shiny app
 ```{r, eval = FALSE}
-save(nutri_clean, file = "data/nutri_clean.RData")
+save(nutri_clean, file = here("data/nutri_clean.RData"))
 ```
 
 ```{r}
@@ -181,7 +181,7 @@ head(nutri_wide)
 Save the wide version to use it later in the Shiny app
 
 ```{r, eval = FALSE}
-save(nutri_wide, file = "data/nutri_wide.RData")
+save(nutri_wide, file = here("data/nutri_wide.RData"))
 ```
 
 Selecting/Matching specific variables 
@@ -208,7 +208,7 @@ nutri_new <- nutri_clean %>%
         select(FoodID = foodID, Food, FoodGroup = foodGroup, Quantity, NutrientID, Nutrient, Unit, Value) 
 head(nutri_new)
         
-save(nutri_new, file = "data/nutri_new.RData", envir = .GlobalEnv)
+save(nutri_new, file = here("data/nutri_new.RData"))
 
 ```
 
@@ -235,14 +235,14 @@ nutri_choice <- nutri_new %>%
         unite(Nutrient, Nutrient, Unit, sep = " (") %>%
         mutate(Nutrient = str_c(Nutrient, ")"))
 
-save(nutri_choice, file = "data/nutri_choice.RData", envir = .GlobalEnv)
+save(nutri_choice, file = here("data/nutri_choice.RData"))
 
 ## New dataset to show  less food observations (reduce memory usage in the ui selectInput)
 food_wide <- nutri_choice %>%
         select(FoodID, Food, Nutrient, Value) %>%
         spread(Nutrient, Value)
 
-save(food_wide, file = "data/food_wide.RData", envir = .GlobalEnv)
+save(food_wide, file = here("data/food_wide.RData"))
 ```
 
 ***
