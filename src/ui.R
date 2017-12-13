@@ -136,13 +136,13 @@ shinyUI(dashboardPage(
                                             br(), 
                                             box(width = 12, dataTableOutput("RecipeTable"),
                                             br(), 
-                                            uiOutput("RemoveIngredientUi"))
+                                            uiOutput("RemoveIngredientUi"), hr(),
                                         
-                                            # textInput("recipeID", 
-                                            #           "Recipe name:", value = "Bolo de iogurte"),
-                                            # br(),
-                                            # actionButton("SaveTable", "Save recipe", icon("floppy-save", lib = "glyphicon"),
-                                            #              style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e")),
+                                            textInput("recipeID",
+                                                      "Recipe name:", value = "Bolo de iogurte"),
+                                            br(),
+                                            actionButton("SaveTable", "Save recipe", icon("floppy-save", lib = "glyphicon"),
+                                                         style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e"))
                                             #uiOutput("load"),
                                             # actionButton("trashID", "Delete recipe", icon("trash", lib = "glyphicon")),
                                             # actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),

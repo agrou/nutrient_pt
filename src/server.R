@@ -301,7 +301,6 @@ shinyServer(function(input, output, session) {
         observeEvent(input$AddIngredient, {
                 req(input$AddIngredient)
                 
-                #print('update occured')
                 input_prev <- session$userData$saveIng
                 input_cur <- tibble(FoodID = as.numeric(input$ingredientID), 
                                         Portion = as.numeric(input$QuantityID))
@@ -319,35 +318,12 @@ shinyServer(function(input, output, session) {
                         input_current$nutrients <- input$NutrientSub
                 }
         })
-        ## Button for deleting selected rows
-        observeEvent(input$RemoveIngredient, {
-                
-                print('delete occured')
-                
-                #input_prev <- session$userData$saveIng
-                #sel_rows <- input_prev %>% filter(row_number() %in% input$RecipeTable_rows_selected)
-                 
-                nutri_cur <- nutri_filtered()
-                
-                input_cur <- nutri_cur %>%
-                        filter(!(row_number() %in% input$RecipeTable_rows_selected)) %>%
-                        rename(Portion = Quantity) %>%
-                        dplyr::distinct(FoodID, Portion) #%>%
-                        #anti_join(sel_rows) 
-                
-                session$userData$saveIng <- input_cur
-                
-                input_current$ingredients <- input_cur
-        })
-        ## Save button to save user input - save recipe
-        # observeEvent(input$SaveTable, {
-        #         print('save occured')
-        #         #new_recipe <- input$RecipeTable
-        # })
-
+       
         
         ## Create a reactive dataset dependent on the ingredients input
         nutri_filtered <- reactive({
+                ## Deleted
+                cat(paste(" --> (2)", input_current$ingredients))
                 
                 if(!isTruthy(input_current$ingredients)){
                         return(NULL)
@@ -357,12 +333,10 @@ shinyServer(function(input, output, session) {
                                 filter(NutrientID %in% input_current$nutrients) %>%
                                 mutate(Quantity = Portion,
                                 Value = (Portion * Value)/100) %>%
-                                select(FoodID, Food, Quantity, Nutrient, Value) }
+                                select(FoodID, Food, Quantity, Nutrient, Value)
                 
-                
-                if (nrow(recipe > 0)){
-                        
-                sum <- recipe %>%
+                if (nrow(recipe) > 0){
+                        sum <- recipe %>%
                         #filter(!(FoodID == totalFoodID)) %>%
                         group_by(Nutrient) %>%
                         summarise(Total = sum(Value)) %>%
@@ -370,35 +344,41 @@ shinyServer(function(input, output, session) {
                         mutate(Food = "Total") %>%
                         rename(Value = Total) 
                         
-        recipe_total <- recipe %>%
+                recipe_total <- recipe %>%
                   bind_rows(sum) %>%
                   #select(Food, Quantity, Nutrient, Unit, Value, Total) #%>%
                   spread(Nutrient, Value) #%>%
                   #select(-FoodID)
                 
-               
-                        
-               return(recipe_total)
+                return(recipe_total)
         
                 } else {
                         return(NULL)
                 }
-                
+                }                
         })
         
-        ## Output the recipes dataset 
-        output$RecipeTable <- DT::renderDataTable({
+        ## Button for deleting selected rows
+        observeEvent(input$RemoveIngredient, {
                 
-                if(isTruthy(nutri_filtered())){
-                        d <- nutri_filtered()
-                        
-                        DT::datatable(d, options = list(orderClasses = TRUE))
-                        
-                        } else {
-                                return(NULL)
-                }
+                print('delete occured')
                 
+                #input_prev <- session$userData$saveIng
+                #sel_rows <- input_prev %>% filter(row_number() %in% input$RecipeTable_rows_selected)
+                
+                nutri_cur <- nutri_filtered()
+                
+                input_cur <- nutri_cur %>%
+                        filter(!(row_number() %in% input$RecipeTable_rows_selected)) %>%
+                        rename(Portion = Quantity) %>%
+                        dplyr::distinct(FoodID, Portion) #%>%
+                #anti_join(sel_rows) 
+                
+                session$userData$saveIng <- input_cur
+                
+                input_current$ingredients <- input_cur
         })
+        
         
         # Show remove ingredient button only after table output
         output$RemoveIngredientUi <- renderUI({
@@ -409,5 +389,41 @@ shinyServer(function(input, output, session) {
                         return(NULL)
                 }
         })
+        
+        ## Output the recipes dataset 
+        output$RecipeTable <- DT::renderDataTable({
+                
+                d <- nutri_filtered()
+                
+                cat("\n--> nutri_filtered()", nrow(d), "\n")
+                observe(print(nutri_filtered()))
+                
+                DT::datatable(d, options = list(orderClasses = TRUE))
+                
+                
+        })
+        
+        # Save recipe
+        
+        observeEvent(input$SaveTable, {
+                
+                print('save occured')
+                
+                recipe_cur <- nutri_filtered() %>% 
+                        mutate(Recipe_Name = input$recipeID)
+                
+                recipe_prev <- session$userData$saveRecipe
+                
+                #observe(print(input$recipeID))
+                
+                recipe_cur <- bind_rows(recipe_prev, recipe_cur)
+                
+                session$userData$saveRecipe <- recipe_cur
+                
+                recipes <- recipe_cur
+                        
+                save(recipes, file = here("results/recipes/recipes.RData"))
+        })
+        
+        
 })
-
