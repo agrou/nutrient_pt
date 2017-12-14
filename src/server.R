@@ -425,5 +425,16 @@ shinyServer(function(input, output, session) {
                 save(recipes, file = here("results/recipes/recipes.RData"))
         })
         
+        output$DownloadTable <- downloadHandler(
+                filename = function() {
+                        paste(input$recipeID, ".csv", sep = "")
+                },
+                content = function(file){
+                        recipe_cur <- nutri_filtered() %>% 
+                                mutate(Recipe_Name = input$recipeID)
+                        write_excel_csv(recipe_cur, file)
+                }
+        )
+        
         
 })

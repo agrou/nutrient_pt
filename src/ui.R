@@ -142,8 +142,8 @@ shinyUI(dashboardPage(
                                                       "Recipe name:", value = "Bolo de iogurte"),
                                             br(),
                                             actionButton("SaveTable", "Save recipe", icon("floppy-save", lib = "glyphicon"),
-                                                         style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e"))
-                                            #uiOutput("load"),
+                                                         style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e"),
+                                            downloadButton("DownloadTable", "Download recipe"))
                                             # actionButton("trashID", "Delete recipe", icon("trash", lib = "glyphicon")),
                                             # actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
                                             #verbatimTextOutput('row_selected'),

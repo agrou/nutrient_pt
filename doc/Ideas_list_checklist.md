@@ -4,8 +4,8 @@
 
 - [x] Add sections to the dashboard and add icons 
 - [x] Correct for filtering Energia - It's matching both [kcal] and [kJ]
-- [ ] Correct conditional UIs  
-- [ ] Creating factors of variables (Food name + Food id number; Nutrient name + Nutrient id number)
+- [x] Correct conditional UIs  
+- [x] Creating factors of variables (Food name + Food id number; Nutrient name + Nutrient id number)
 
 
 ### Sections:
@@ -18,7 +18,7 @@
 - [x] Add a graph visualization to find and compare food items 
 - [x] Correct graph display (1 column and bars together)
 - [x] Correct labels in the plot
-- [ ] Add radio button to visualize table and/or plot
+- [x] Add radio button to visualize table and/or plot
 - [ ] Add radio button to visualize graph faceting by unit or by nutrient+unit
 - [ ] Add radio buttons to compare by 100g or by portion size (household measures)
 - [ ] Add food groups selection to the selectize.js button 
