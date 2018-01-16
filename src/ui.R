@@ -11,11 +11,11 @@ shinyUI(dashboardPage(
         skin = "black",
         
         
-        dashboardHeader(title = "Food Decisions", titleWidth = 350),
+        dashboardHeader(title = "Food Decisions", titleWidth = 300),
         
         # Sidebar content
-        dashboardSidebar(disable = F, width = 350,
-                         img(src='recipe2.png', width = '350px'),
+        dashboardSidebar(disable = F, width = 300,
+                         img(src='recipe2.png', width = '300px'),
                          sidebarMenu(
                                  menuItem("Food", tabName = "Food", 
                                           icon = icon("search", lib = "glyphicon")),
@@ -113,7 +113,7 @@ shinyUI(dashboardPage(
                                                         'Add ingredient'"))),
                                             p(h4("Visualize different nutritional components and click on 'update nutritional summary'")),
                                             br(), br(),
-                                            box(status = "success", width = 12,
+                                            box(width = 12,
                                                 selectizeInput("ingredientID",
                                                            label = "1. Select food ingredients",
                                                            #choices = unique(nutri_clean$foodItem),
@@ -143,7 +143,9 @@ shinyUI(dashboardPage(
                                             br(),
                                             actionButton("SaveTable", "Save recipe", icon("floppy-save", lib = "glyphicon"),
                                                          style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e"),
-                                            downloadButton("DownloadTable", "Download recipe"))
+                                            downloadButton("DownloadTable", "Download recipe"),
+                                            actionButton("PercMacro", "Inspect Calories", icon("search")),
+                                            plotOutput("InspectCalories"))
                                             # actionButton("trashID", "Delete recipe", icon("trash", lib = "glyphicon")),
                                             # actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
                                             #verbatimTextOutput('row_selected'),

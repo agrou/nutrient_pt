@@ -436,5 +436,35 @@ shinyServer(function(input, output, session) {
                 }
         )
         
+        # output$InspectCalories <- renderPlot({
+        #         
+        #         d <- nutri_filtered() %>%
+        #                 filter(Food %in% "Total") %>%
+        #                 select(-FoodID, -Quantity) %>%
+        #                 gather(key = Nutrient, value = Value, -Food)
+        #         
+        #         nutri_join <- d %>%
+        #                 filter(Nutrient %in% names) %>%
+        #                 left_join(nutri_conv, by = 'Nutrient')
+        #         
+        #         observe(print(d))
+                
+               
+                        # ggplot(data = d,
+                        #             aes(x = Food, y = Value, fill = Nutrient)) +
+                        #         geom_bar(
+                        #                 position=position_dodge(0.9), stat = "identity") +
+                        #         coord_flip() +
+                        #         facet_wrap(~Unit, scales = "free", ncol = 1) +
+                        #         labs(title = "Nutritional values of selected food items\n",
+                        #              x = "", y = "", fill = "") +
+                        #         scale_fill_ptol() +
+                        #         theme(legend.position = "right",
+                        #               plot.title = element_text(vjust=2)) +
+                        #         theme_minimal()
+                        
+                       
+        #})
+        
         
 })

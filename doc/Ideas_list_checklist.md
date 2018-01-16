@@ -6,6 +6,8 @@
 - [x] Correct for filtering Energia - It's matching both [kcal] and [kJ]
 - [x] Correct conditional UIs  
 - [x] Creating factors of variables (Food name + Food id number; Nutrient name + Nutrient id number)
+- [ ] Add DRIs info to compare with data visualizations
+- [ ] Correct errors for when user input is null (e.g. download recipe button)
 
 
 ### Sections:
@@ -30,7 +32,7 @@ Objective: get lists of food items per nutrient selection: Nutrient quantity in 
 - [x] Correct slider updated range numeric labels (getting value from previous and not current input) 
 - [ ] Add button to select by FoodGroup 
 - [x] Don't show FoodID variable
-- [ ] Correct when one of the sliders input is null only showing output for the other slider
+- [x] Correct when one of the sliders input is null only showing output for the other slider
 - [ ] Enable changing the quantity of food items (portion sizes) - later
 
 **2. Recipe section**
@@ -38,11 +40,12 @@ Objective: get lists of food items per nutrient selection: Nutrient quantity in 
 - [x] Create new recipe with food ingredient input and dynamic quantities changing the nutritional values 
 - [x] Change one food ingredient's quantity at a time and add to the same output table 
 - [x] Correct for quantity input changes in all. input should only change current session not previous sessions
-- [ ] Get button Save recipe working 
-- [ ] Get button delete rows to work
+- [x] Get button Save recipe working 
+- [x] Get button delete rows to work
 - [ ] Select recipes already created and activate delete recipe button
 - [ ] Enable changing only some ingredients and quantities in a specific recipe
 - [ ] Get statistical summaries for each recipe: Add progressive bars to recipe table or graph visualization for each nutrient 
+- [ ] Import recipes text and process it
 
 
 **3. Meal section**

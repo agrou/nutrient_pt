@@ -22,6 +22,7 @@ load(here("data/nutri_wide.RData"))
 load(here("data/nutri_new.RData"))
 load(here("data/nutri_choice.RData"))
 load(here("data/food_wide.RData"))
+load(here("data/nutri_conv.RData"))
 
 ## Define default nutrients for recipes section
 RecipeNutrients <-  nutri_wide %>% 

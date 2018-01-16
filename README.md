@@ -14,6 +14,8 @@ This is how the app looks like:
 
 ## Instructions to run the app
 
+Go through the following instructions to have the whole project locally:
+
 ### 1. Download the project
 
 - To run the app you need to download this project, open the `nutrient_pt.Rproj` in RStudio. 
