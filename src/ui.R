@@ -135,8 +135,10 @@ shinyUI(dashboardPage(
                                            
                                             br(), 
                                             box(width = 12, dataTableOutput("RecipeTable"),
-                                            br(), 
-                                            uiOutput("RemoveIngredientUi"), hr(),
+                                            br(), br(),
+                                            uiOutput("RemoveIngredientUi"), br(), 
+                                            #uiOutput("InspectCaloriesUi"), hr(),
+                                            #actionButton("PercMacro", "Inspect Calories", icon("search")),
                                         
                                             textInput("recipeID",
                                                       "Recipe name:", value = "Bolo de iogurte"),
@@ -144,11 +146,9 @@ shinyUI(dashboardPage(
                                             actionButton("SaveTable", "Save recipe", icon("floppy-save", lib = "glyphicon"),
                                                          style = "color: #fff; background-color: #7a3b2e; border-color: #7a3b2e"),
                                             downloadButton("DownloadTable", "Download recipe"),
-                                            actionButton("PercMacro", "Inspect Calories", icon("search")),
+                                            
                                             plotOutput("InspectCalories"))
-                                            # actionButton("trashID", "Delete recipe", icon("trash", lib = "glyphicon")),
-                                            # actionButton("ResetID", "Reset", icon("repeat", lib = "glyphicon")), br(), br(),
-                                            #verbatimTextOutput('row_selected'),
+                
                                             
                                             # http://rstudio.github.io/DT/shiny.html
                                             # https://community.rstudio.com

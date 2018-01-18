@@ -1,0 +1,80 @@
+## Where are the calories coming from?
+
+If we convert the macronutrients weight unit (grams) into calories we can filter foods for highest/lowest percentage of calories from each macronutrient (protein, lipids, carbohydrates).
+
+**Load required libraries**
+```{r, warning=FALSE, message = FALSE}
+library(tidyverse)
+library(stringr)
+library(here) # to load data stored in a different level directory
+library(DT)
+```
+
+**Load required datasets (pre-processed tidy data)**
+```{r}
+load(here("data/food_wide.RData"))
+load(here("data/nutri_choice.RData"))
+```
+
+
+### Which food items have more calories from fat/sugar/protein
+
+Select only macronutrients 
+```{r}
+nutri_macro <-  food_wide %>% 
+        select(FoodID, Food, str_subset(names(.), "ENERCC|\\(CHO\\)|PROT|\\(FAT\\)"))
+
+head(nutri_macro)
+
+```
+
+
+#### Energy Conversions
+
+Conversions will be made according to [FAO agreement on Food energy conversion factors](http://www.fao.org/docrep/006/Y5022E/y5022e05.htm#TopOfPage)
+
+**Prepare a table with the energy conversion factors for each nutrient**
+```{r}
+names <- names(nutri_macro)[3:6]
+names
+nutri_conv <- tibble(Nutrient = names, Calories_Factor = c(1, 4, 9, 4))
+nutri_conv
+```
+
+```{r}
+save(nutri_conv, file = here("data/nutri_conv.RData"))
+```
+
+
+**Join energy conversion factors into the whole dataset** 
+```{r}
+nutri_join <- nutri_choice %>%
+        filter(Nutrient %in% names) %>%
+        left_join(nutri_conv, by = 'Nutrient')
+knitr::kable(head(nutri_join))
+```
+
+**Calculate energy values for each nutrient**
+```{r}
+nutri_cal <- nutri_join %>%
+        mutate(Value_cal = Value * Calories_Factor) 
+DT::datatable(nutri_cal)
+```
+
+
+**Get only the value of total energy (quilocaloria) to determine energy percentages for each macronutrient**
+```{r}
+knitr::kable(head(nutri_macro))
+
+energy <- nutri_macro %>% 
+        select(FoodID, Food, str_subset(names(.), "ENERCC"))
+```
+
+**Join the energy total values with previous macronutrients dataset to determine percentages**
+```{r}
+nutri_perc <- nutri_cal %>% 
+        left_join(energy, by = c('FoodID', 'Food')) %>%
+        mutate(Value_perc = sprintf("%6.1f", (Value_cal * 100)/ `Energia_kcal (ENERCC) (quilocaloria)`))
+DT::datatable(nutri_perc)
+```
+

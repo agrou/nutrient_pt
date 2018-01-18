@@ -328,29 +328,77 @@ shinyServer(function(input, output, session) {
                 if(!isTruthy(input_current$ingredients)){
                         return(NULL)
                 } else {
+                        
+                # Create a recipe 
                 recipe <- nutri_choice %>%
+                                # Match ingredients & quantities that user selected
                                 right_join(input_current$ingredients, by = "FoodID") %>%
+                                # filter only the nutrients that user selects
                                 filter(NutrientID %in% input_current$nutrients) %>%
+                                # Change the  standard quantity to the user input portion
                                 mutate(Quantity = Portion,
+                                # Calculate output values for each portion and food               
                                 Value = (Portion * Value)/100) %>%
                                 select(FoodID, Food, Quantity, Nutrient, Value)
                 
                 if (nrow(recipe) > 0){
+                        
+                        # Calculate the total summaries for the recipe
                         sum <- recipe %>%
-                        #filter(!(FoodID == totalFoodID)) %>%
                         group_by(Nutrient) %>%
                         summarise(Total = sum(Value)) %>%
                         ungroup() %>%
+                        # Get total labels in the same column for the food items
                         mutate(Food = "Total") %>%
+                        # Rename column with total values from Total to Value
                         rename(Value = Total) 
                         
+                        # Isolate energy values from the recipe and the total summaries
+                        energy <- recipe %>%
+                                bind_rows(sum) %>%
+                                filter(str_detect(Nutrient, "ENERCC")) %>%
+                                # Change the value column name to the Energy name  to use it later as a variable
+                                # and convert nutrient unit into calories
+                                mutate(`Energia_kcal (ENERCC) (quilocaloria)` = Value) %>%
+                                select(-Nutrient, -Quantity, -Value)
+                        
                 recipe_total <- recipe %>%
-                  bind_rows(sum) %>%
-                  #select(Food, Quantity, Nutrient, Unit, Value, Total) #%>%
-                  spread(Nutrient, Value) #%>%
+                        bind_rows(sum) %>%
+                        # Add nutrient caloric conversions (see document energy_conversions.Rmd)
+                        left_join(nutri_conv, by = 'Nutrient') %>%
+                        # Calculate caloric values for each nutrient
+                        mutate(Value_cal = Value * Calories_Factor) %>%
+                        left_join(energy, by = c('FoodID', 'Food')) %>%
+                        # Calculate percentage of calories for each nutrient in the recipe
+                        mutate(Value_perc = sprintf("%6.1f", (Value_cal * 100)/ `Energia_kcal (ENERCC) (quilocaloria)`)) %>%
+                        select(FoodID, Food, Quantity, Nutrient, Value, Value_cal, Value_perc) #%>%
+                        #spread(Nutrient, Value) #%>%
                   #select(-FoodID)
                 
-                return(recipe_total)
+                
+                # Split recipe table in percentage values and caloric values for each nutrient, to move this variables into observations
+
+                ValuePerc <- recipe_total %>% 
+                        filter(Food %in% "Total") %>%
+                        mutate(Food = "Total (%)") %>%
+                        select(-Value, -Value_cal) %>%
+                        mutate(Value = as.numeric(Value_perc)) %>%
+                        select(-Value_perc)
+                
+                ValueCal <- recipe_total %>%
+                        filter(Food %in% "Total") %>%
+                        mutate(Food = "Total (kcal)") %>%
+                        select(-Value, -Value_perc) %>%
+                        rename(Value = "Value_cal") 
+                
+                # Get all the values in the same table and change from long to wide format
+                all_values <- recipe_total %>%
+                        bind_rows(ValueCal) %>%
+                        bind_rows(ValuePerc) %>%
+                        select(-Value_cal, -Value_perc) %>%
+                        spread(Nutrient, Value)
+
+                return(all_values)
         
                 } else {
                         return(NULL)
@@ -390,6 +438,24 @@ shinyServer(function(input, output, session) {
                 }
         })
         
+        # output$InspectCaloriesUi <- renderUI({
+        #         if(isTruthy(nrow(nutri_filtered()))){
+        #                 actionButton("PercMacro", "Inspect Calories", icon("search"), 
+        #                              style = "color: #fff; background-color: #cc720c; border-color: #cc720c")
+        #         }
+        # })
+        
+        # observeEvent(input$PercMacro, {
+        #         print('inspect occured')
+        #         
+        #         nutri_cur <- nutri_filtered()
+        #         
+        #         # get total nutrient values 
+        #         total <- nutri_cur %>%
+        #                 filter(str_detect(Food, "Total"))
+                
+                     #})
+        
         ## Output the recipes dataset 
         output$RecipeTable <- DT::renderDataTable({
                 
@@ -399,7 +465,6 @@ shinyServer(function(input, output, session) {
                 observe(print(nutri_filtered()))
                 
                 DT::datatable(d, options = list(orderClasses = TRUE))
-                
                 
         })
         
@@ -435,6 +500,8 @@ shinyServer(function(input, output, session) {
                         write_excel_csv(recipe_cur, file)
                 }
         )
+        
+        
         
         # output$InspectCalories <- renderPlot({
         #         
