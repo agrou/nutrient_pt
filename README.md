@@ -4,7 +4,7 @@ This is a collaborative project with the aim of tidying and visualising nutritio
 
 In order to help manage the development of the Shiny App a checklist with ideas and tasks is available under `doc` folder: `Ideas_list_checklist.md` 
 
-This is how the app looks like:
+Test the app here: https://agrou.shinyapps.io/nutrient_pt/
  
 ![nutrient_pt app][appimage]
 
